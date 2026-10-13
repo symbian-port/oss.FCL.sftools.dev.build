@@ -1,0 +1,6 @@
+# Build artifacts
+/python
+*.pyc
+/bin/
+/raptor/linux-*
+/raptor/lib/config/*.orig

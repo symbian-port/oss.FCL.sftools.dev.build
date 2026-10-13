@@ -73,10 +73,10 @@
 		<set name="LINKER_ADD_STATIC_RUNTIME" value="1"/>
 		<set name="LINKER_DEBUG_OPTION" value=""/>
 		<set name="LINKER_DEFAULT_LIB_PATHS" value=""/>
-		<set name="LINKER_DEFAULT_LIBS" value="-lsupc++ -lgcc"/>
+		<set name="LINKER_DEFAULT_LIBS" value="-Wl,--start-group -lsupc++ -lgcc_eh -lgcc -Wl,--end-group"/>
 		<set name="LINKER_ENTRY_OPTION" value="-Wl,--entry"/>
-		<set name="LINKER_GROUP_END_OPTION" value="--end-group"/>
-		<set name="LINKER_GROUP_START_OPTION" value="--start-group"/>
+		<set name="LINKER_GROUP_END_OPTION" value="-Wl,--end-group"/>
+		<set name="LINKER_GROUP_START_OPTION" value="-Wl,--start-group"/>
 		<set name="LINKER_MISC_FLAGS" value="-Wl,$(CODE_SEGMENT_START),0x8000"/>
 		<set name="LINKER_NODEBUG_OPTION" value = "-Wl,--strip-debug"/>
 		<set name="LINKER_SCRIPT_FILE_OPTION" value="-T"/>
@@ -125,6 +125,6 @@
 		<set name="USERINCLUDE" value=""/>
 		<set name="VFE_OPTION" value=""/>
 
-		<append name="CDEFS" value="__GCCE__"/>
+		<append name="CDEFS" value="__GCCE__ __GCC32__"/>
 	</var>
 </build>
