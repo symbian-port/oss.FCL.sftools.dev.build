@@ -186,7 +186,7 @@ sub ProcessImageContent
 	my $TotalImages = &ProcessRomGeometry();
 
 	my @trgList;
-	if( defined @{$ImageContent{romtarget}{target}{nodes}})
+	if( @{$ImageContent{romtarget}{target}{nodes}})
 	{
 		@trgList = @{$ImageContent{romtarget}{target}{nodes}};
 	}
@@ -211,7 +211,7 @@ sub ProcessImageContent
 
 #	Romscope - update the maps if the files and directories are mentioned.
 	my @romScopeNodes;
-	if(defined @{$ImageContent{romscope}{cdf}{nodes}})
+	if(@{$ImageContent{romscope}{cdf}{nodes}})
 	{
 		@romScopeNodes = @{$ImageContent{romscope}{cdf}{nodes}};
 	}
@@ -269,31 +269,31 @@ sub ProcessImageContent
 
 #	Pick the primary/secondary/device binaries
 	my @nodes = &genericparser::getNodeFromTree($RootNode, "options", "primary", "file");
-	if( defined @nodes)
+	if( @nodes)
 	{
 		&SaveImageContentBinaries(\@nodes, "primary");
 	}
 
 	@nodes = &genericparser::getNodeFromTree($RootNode, "options", "secondary", "file");
-	if( defined @nodes)
+	if( @nodes)
 	{
 		&SaveImageContentBinaries(\@nodes, "secondary");
 	}
 
 	@nodes = &genericparser::getNodeFromTree($RootNode, "options", "extension", "file");
-	if( defined @nodes)
+	if( @nodes)
 	{
 		&SaveImageContentBinaries(\@nodes, "extension");
 	}
 
 	@nodes = &genericparser::getNodeFromTree($RootNode, "options", "variant", "file");
-	if( defined @nodes)
+	if( @nodes)
 	{
 		&SaveImageContentBinaries(\@nodes, "variant");
 	}
 
 	@nodes = &genericparser::getNodeFromTree($RootNode, "options", "device", "file");
-	if( defined @nodes)
+	if( @nodes)
 	{
 		&SaveImageContentBinaries(\@nodes, "device");
 	}
@@ -959,7 +959,7 @@ sub GenObyHeader
 	my $line;
 
 #	version
-	if( defined @{$ImageContent{version}{vals}})
+	if( @{$ImageContent{version}{vals}})
 	{
 		my $ver = @{$ImageContent{version}{vals}}[0];
 		if(defined $ver)
@@ -970,7 +970,7 @@ sub GenObyHeader
 	}
 
 #	romchecksum
-	if( defined @{$ImageContent{romchecksum}{vals}})
+	if( @{$ImageContent{romchecksum}{vals}})
 	{
 		my $cksum = @{$ImageContent{romchecksum}{vals}}[0];
 		if(defined $cksum)
@@ -981,7 +981,7 @@ sub GenObyHeader
 	}
 
 #	time
-	if( defined @{$ImageContent{time}{vals}})
+	if( @{$ImageContent{time}{vals}})
 	{
 		my $time = @{$ImageContent{time}{vals}}[0];
 		if(defined $time)
@@ -1001,7 +1001,7 @@ sub GenObyHeader
 	}
 
 #	trace
-	if( defined @{$ImageContent{options}{trace}{vals}})
+	if( @{$ImageContent{options}{trace}{vals}})
 	{
 		my @traceFlags = @{$ImageContent{options}{trace}{vals}};
 		if(scalar @traceFlags)
@@ -1012,7 +1012,7 @@ sub GenObyHeader
 	}
 
 #	The bootbinary
-	if( defined @{$ImageContent{options}{bootbinary}{vals}})
+	if( @{$ImageContent{options}{bootbinary}{vals}})
 	{
 		my $binary;
 		my @bootbin = @{$ImageContent{options}{bootbinary}{vals}};
@@ -1027,7 +1027,7 @@ sub GenObyHeader
 
 
 #	dataaddress
-	if( defined @{$ImageContent{options}{dataaddress}{vals}})
+	if( @{$ImageContent{options}{dataaddress}{vals}})
 	{
 		my @dataAddr = @{$ImageContent{options}{dataaddress}{vals}};
 		if(scalar @dataAddr)
@@ -1038,7 +1038,7 @@ sub GenObyHeader
 	}
 
 #	debugport
-	if( defined @{$ImageContent{options}{debugport}{vals}})
+	if( @{$ImageContent{options}{debugport}{vals}})
 	{
 		my @dgbPort = @{$ImageContent{options}{debugport}{vals}};
 		if(scalar @dgbPort)
@@ -1049,7 +1049,7 @@ sub GenObyHeader
 	}
 
 #	defaultstackreserve
-	if( defined @{$ImageContent{options}{defaultstackreserve}{vals}})
+	if( @{$ImageContent{options}{defaultstackreserve}{vals}})
 	{
 		my @defStackRes = @{$ImageContent{options}{defaultstackreserve}{vals}};
 		if(scalar @defStackRes)
@@ -1060,7 +1060,7 @@ sub GenObyHeader
 	}
 
 #	wrapper
-	if( defined @{$ImageContent{options}{wrapper}{vals}})
+	if( @{$ImageContent{options}{wrapper}{vals}})
 	{
 		my %tbl = @{$ImageContent{options}{wrapper}{vals}}[0];
 		if(exists $tbl{epoc})
@@ -1082,38 +1082,38 @@ sub GenObyHeader
 
 #	kernel options
 	my $val;
-	if( defined @{$ImageContent{options}{kernel}{name}{vals}})
+	if( @{$ImageContent{options}{kernel}{name}{vals}})
 	{
 		$val = @{$ImageContent{options}{kernel}{name}{vals}}[0];
 		$line = "kernelromname=$val\n";
 		print $fh $line;
 	}
-	if( defined @{$ImageContent{options}{kernel}{dataaddress}{vals}})
+	if( @{$ImageContent{options}{kernel}{dataaddress}{vals}})
 	{
 		$val = @{$ImageContent{options}{kernel}{dataaddress}{vals}}[0];
 		$line = "kerneldataaddress=$val\n";
 		print $fh $line;
 	}
-	if( defined @{$ImageContent{options}{kernel}{trace}{vals}})
+	if( @{$ImageContent{options}{kernel}{trace}{vals}})
 	{
 		$val = @{$ImageContent{options}{kernel}{trace}{vals}}[0];
 		$line = "kerneltrace $val\n";
 		print $fh $line;
 	}
-	if( defined @{$ImageContent{options}{kernel}{heapmin}{vals}})
+	if( @{$ImageContent{options}{kernel}{heapmin}{vals}})
 	{
 		$val = @{$ImageContent{options}{kernel}{heapmin}{vals}}[0];
 		$line = "kernelheapmin=$val\n";
 		print $fh $line;
 	}
-	if( defined @{$ImageContent{options}{kernel}{heapmax}{vals}})
+	if( @{$ImageContent{options}{kernel}{heapmax}{vals}})
 	{
 		$val = @{$ImageContent{options}{kernel}{heapmax}{vals}}[0];
 		$line = "kernelheapmax=$val\n";
 		print $fh $line;
 	}
 #	romlinearbase
-	if( defined @{$ImageContent{options}{romlinearbase}{vals}})
+	if( @{$ImageContent{options}{romlinearbase}{vals}})
 	{
 		my @romLinBase = @{$ImageContent{options}{romlinearbase}{vals}};
 		if(scalar @romLinBase)
@@ -1124,7 +1124,7 @@ sub GenObyHeader
 	}
 
 #   romalign
-	if( defined @{$ImageContent{options}{romalign}{vals}})
+	if( @{$ImageContent{options}{romalign}{vals}})
 	{
 		my @romAlign = @{$ImageContent{options}{romalign}{vals}};
 		if(scalar @romAlign )
@@ -1138,7 +1138,7 @@ sub GenObyHeader
 
 
 #	autosize keyword with the block size
-	if( defined @{$ImageContent{options}{autosize}{vals}})
+	if( @{$ImageContent{options}{autosize}{vals}})
 	{
 		my @autoSz = @{$ImageContent{options}{autosize}{vals}};
 		if(scalar @autoSz )
@@ -1149,7 +1149,7 @@ sub GenObyHeader
 	}
 
 #	coreimage keyword with the coreimage name.
-	if( defined @{$ImageContent{options}{coreimage}{vals}})
+	if( @{$ImageContent{options}{coreimage}{vals}})
 	{
 		my @coreImg = @{$ImageContent{options}{coreimage}{vals}};
 		if(scalar @coreImg)
@@ -1499,7 +1499,7 @@ sub ProcessStaticDep
 	if( defined $binaryInfoRef)
 	{
 #		Mark the binary it it is a valid E32 executable.
-		if(defined @StatDepsList)
+		if(@StatDepsList)
 		{
 			$binaryInfoRef->{IsExecutable} = 1;
 		}

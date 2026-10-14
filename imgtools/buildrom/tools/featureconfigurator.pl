@@ -328,7 +328,7 @@ sub process_cmdline_arguments
  
 	my ($paramFileFlag, @argList); 
 
-	if (defined @_) {
+	if (@_) {
 		($paramFileFlag, @argList) = @_;
 	}
 	else {

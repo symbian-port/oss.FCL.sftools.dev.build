@@ -448,6 +448,9 @@ sub get_bpabiplatlist
         }
     }
     closedir DIR;
+    if (!scalar(@BPABIPlats)) {
+        push @BPABIPlats, ("ARMV5", "ARMV6", "ARMV7", "ARMV5_ABIV2", "ARM4");
+    }
     return @BPABIPlats;
 }
 
@@ -739,7 +742,7 @@ sub init_bsfs($) {
     foreach $BSF (@BSFs) {
         my $File=$Path.lc($BSF).'.bsf';
 #       check whether the assp is already defined
-        if (defined %{$Plat{$BSF}}) {
+        if ($Plat{$BSF} && %{$Plat{$BSF}}) {
             warn(
                 "$File : warning: Platform \"$BSF\" already defined\n",
                 " ... skipping this spec\n"
@@ -789,7 +792,7 @@ sub init_bsfs($) {
         # 2. If so, check whether the root BSF file has already been read.
         # 3. If not read, then defer the current BSF file reading until the root file is read.
         my $rootPlatFound = 0;
-        if (defined %{$Plat{$root}} || $Armv5Flag) 
+        if (($Plat{$root} && %{$Plat{$root}}) || $Armv5Flag) 
         {
             # BSF platform customizes another valid BSF platform
             if (defined $Plat{$root}{'CUSTOMIZES'}) 
@@ -941,7 +944,7 @@ sub init_plat ($) { # takes path to ASSP modules
     foreach $ASSP (@ASSPs) {
         my $File=$Path.$ASSP.'.assp';
 #       check whether the assp is already defined
-        if (defined %{$Plat{$ASSP}}) {
+        if ($Plat{$ASSP} && %{$Plat{$ASSP}}) {
             warn(
                 "$File : warning: ASSP \"$ASSP\" already defined\n",
                 " ... skipping this module\n"

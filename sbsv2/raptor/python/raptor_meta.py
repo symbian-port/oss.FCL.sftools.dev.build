@@ -341,9 +341,9 @@ class PreProcessor(raptor_utilities.ExternalTool):
 						continue
 					if not remarkRE.search(error):
 						if warningRE.search(error):
-							self.raptor.Warn("%s: %s", tool, error)
+							self.raptor.Warn("%s: %s", tool, error.decode("utf-8", "replace") if isinstance(error, str) else error)
 						else:
-							self.raptor.Error("%s: %s", tool, error)
+							self.raptor.Error("%s: %s", tool, error.decode("utf-8", "replace") if isinstance(error, str) else error)
 							actualErr = True
 			if actualErr:
 				raise MetaDataError("Errors in %s" % str(sourcefilename))

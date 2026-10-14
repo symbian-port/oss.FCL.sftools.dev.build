@@ -58,7 +58,68 @@ require Exporter;
 	create_smrimage
 	getWorkdir
 	isIgnoreConfig
+	find_path_ci
 );
+
+my %dir_cache;
+
+sub find_path_ci {
+	my ($path) = @_;
+	return undef unless defined $path && length($path);
+
+	$path =~ s{^["'\s]+}{};
+	$path =~ s{["'\s]+$}{};
+	$path =~ s{^[a-zA-Z]:}{};
+	$path =~ s{\\}{/}g;
+	$path =~ s{//+}{/}g;
+
+	return $path if (-e $path);
+
+	my $is_abs = ($path =~ m{^/});
+	my @parts = split m{/}, $path;
+	shift @parts if ($is_abs && @parts && $parts[0] eq "");
+
+	my $current = $is_abs ? "/" : ".";
+
+	foreach my $part (@parts) {
+		next if ($part eq "" || $part eq ".");
+		if ($part eq "..") {
+			$current = ($current eq "/") ? "/.." : "$current/..";
+			next;
+		}
+
+		my $direct = ($current eq "/") ? "/$part" : "$current/$part";
+		if (-e $direct) {
+			$current = $direct;
+			next;
+		}
+
+		my $lookup_dir = $current;
+		if (!exists $dir_cache{$lookup_dir}) {
+			if (opendir(my $dh, $lookup_dir)) {
+				my %entries;
+				while (my $entry = readdir($dh)) {
+					$entries{lc($entry)} = $entry;
+				}
+				closedir($dh);
+				$dir_cache{$lookup_dir} = \%entries;
+			} else {
+				return undef;
+			}
+		}
+
+		my $entries = $dir_cache{$lookup_dir};
+		my $matched = $entries->{lc($part)};
+		if (defined $matched) {
+			$current = ($current eq "/") ? "/$matched" : "$current/$matched";
+		} else {
+			return undef;
+		}
+	}
+
+	return $current if (-e $current);
+	return undef;
+}
 
 my $useinterpretsis = 1;
 if ($^O !~ /^MSWin32$/i){
@@ -767,7 +828,7 @@ sub process_cmdline_arguments
 
 	my ($paramFileFlag, @argList); 
 
-	if (defined @_ && scalar(@_) > 0) {
+	if (@_ && scalar(@_) > 0) {
 		($paramFileFlag, @argList) = @_;
 	}
 	else
@@ -1460,7 +1521,7 @@ sub preprocessing_phase
 		else
 		{
 			# no feature variant so use the standard includes
-			$cppargs .= " -I. -I \"$rominclude\"";
+			$cppargs .= " -I. -I \"$rominclude\" -I \"$epocroot/epoc32\" -I \"$epocroot/epoc32/rom\" -I \"$epocroot/epoc32/rom/include\"";
 		}
 
 		if ($stdcpp)
@@ -1471,6 +1532,27 @@ sub preprocessing_phase
 		
 		is_existinpath("$preprocessor", romutl::DIE_NOT_FOUND);
 		$errors = 0;
+		my %predefines;
+		if ($cppargs =~ /-DVARIANT=(\w+)/i) {
+			$predefines{'VARIANT'} = $1;
+		}
+		foreach my $arg (@obyfiles) {
+			if (open(OBY, $arg)) {
+				while (my $l = <OBY>) {
+					if ($l =~ /^\s*define\s+(\w+)\s+(\S+)/i) {
+						$predefines{uc($1)} = $2;
+					}
+				}
+				close OBY;
+			}
+		}
+		if (!$predefines{'VARIANT'} && @obyfiles) {
+			my $first = $obyfiles[0];
+			$first =~ s/^.*[\/\\]//;
+			$first =~ s/\.oby$//i;
+			$predefines{'VARIANT'} = $first;
+		}
+
 		open CPP, "| $preprocessor -Wno-endif-labels -o $temp1OBYFile $cppargs" or die "* Can't execute cpp";
 		foreach my $arg (@obyfiles)
 		{
@@ -1479,6 +1561,15 @@ sub preprocessing_phase
 			if(open(OBY, $arg)) {
 				print "* reading $arg\n" if ($opt_v);
 				while ($line=<OBY>) {
+					if ($line =~ /^\s*#\s*include\s*([<"])(.*)([>"])/) {
+						my ($d1, $inc, $d2) = ($1, $2, $3);
+						$inc =~ s{\\}{/}g;
+						foreach my $k (keys %predefines) {
+							my $v = $predefines{$k};
+							$inc =~ s/##$k##/$v/ig;
+						}
+						$line = "#include $d1$inc$d2\n";
+					}
 					print CPP $line;
 				}
 				close OBY;
@@ -2411,7 +2502,7 @@ sub reorganize_phase
 	
 	for ( my $datapartitionidx=0; $datapartitionidx < $dataImageCount; $datapartitionidx++ )
 	{
-		if( defined( @{ $datapartition[$datapartitionidx] } ) )
+		if( $datapartition[$datapartitionidx] && @{ $datapartition[$datapartitionidx] } )
 		{
 			push @newobydata, "REM DATA_IMAGE[$dataIndexHash{$datapartitionidx}]\n" ;
 			foreach my $file (@{$datapartition[$datapartitionidx]})
@@ -3341,10 +3432,8 @@ sub suppress_phase
 			my $normedFilename = &get_versionedname($filename) ;
 			my @alternatives = ();
 			if( $what =~ /data$/i ) {				
-				if(-e $normedFilename) {
-					$fileExists = $normedFilename ;
-				} 
-				else {
+				$fileExists = find_path_ci($normedFilename);
+				if (!$fileExists) {
 					if($normedFilename =~ /^\s*"?([\\\/]?)([^"]+)"?/i) {
 						if($1) {
 							$normedFilename = $epocroot.$2 ; 
@@ -3352,12 +3441,10 @@ sub suppress_phase
 						else {
 							$normedFilename = $2 ; 
 						}
-						
-						$fileExists = $normedFilename if(-e $normedFilename);
+						$fileExists = find_path_ci($normedFilename);
 					}
-					 
 				}
-				push @alternatives, $normedFilename; 
+				push @alternatives, ($fileExists || $normedFilename); 
 			}
 			else { 
 				# find all the alternative file locations
@@ -3387,13 +3474,20 @@ sub suppress_phase
 						$tmpFile = $altFile;
 					}					
 					 
-					if (-e $tmpFile){
+					my $ciTmp = find_path_ci($tmpFile);
+					if ($ciTmp){
 						# SBSv2 variant binary exists
-						$fileExists = $tmpFile;
+						$fileExists = $ciTmp;
 					}
 					else {
 						# SBSv1 variant binary or invariant binary
-						$fileExists = get_BVbinname($altFile, $varname);
+						my $ciAlt = find_path_ci($altFile);
+						if ($ciAlt) {
+							$fileExists = get_BVbinname($ciAlt, $varname) || $ciAlt;
+						} else {
+							$fileExists = get_BVbinname($altFile, $varname);
+							$fileExists = find_path_ci($fileExists) if $fileExists;
+						}
 					} 
 					last if $fileExists;
 					 
@@ -3411,7 +3505,9 @@ sub suppress_phase
 				$from =~ s/(\{|\})/\\$1/g;	# need to escape brace for file names like "mydll{00010001}.dll",etc.
 				my $into = $fileExists;
 
- 				$line =~ s/$from/$into/i;
+				if (! ($line =~ s/\Q$filename\E/$into/i)) {
+					$line =~ s/$from/$into/i;
+				}
 
  				if ($warnSelection && ($fileExists ne $normedFilename))
 				{
@@ -3457,7 +3553,7 @@ sub suppress_phase
 				my $dllMapKey = lc ($dstFile);
 				if(exists $DllDataMap{$dllMapKey}) {
 					my $dllSymInfo = \%{$DllDataMap{$dllMapKey}};
-					$dllSymInfo->{srcfile} = $aSrcfile;
+					$dllSymInfo->{srcfile} = find_path_ci($aSrcfile) || $aSrcfile;
 					$dllSymInfo->{dstpath} = $dstPath;
 				}
 			}
@@ -4903,11 +4999,22 @@ sub process_dlldata
 		}		
 		$rootPlatName =	&get_platcustomizes($platName) ? &get_platroot($platName) : $platName;
 		
-		# Map files will be referred for all ARM platforms, 
-		# and for BSF platforms which cutomizes ARM platforms.
-		if($rootPlatName =~ /^(armv5|$plat)$/i){
-			my $mapfile = "${aDllFile}.map";
-			
+		# Check if an RVCT map file with "Global Symbols" exists
+		my $use_map = 0;
+		my $mapfile = find_path_ci("${aDllFile}.map");
+		if ($mapfile && -e $mapfile) {
+			if (open(TESTMAP, "<", $mapfile)) {
+				while (<TESTMAP>) {
+					if (/Global Symbols/) {
+						$use_map = 1;
+						last;
+					}
+				}
+				close TESTMAP;
+			}
+		}
+
+		if ($use_map) {
 			open MAPFILE, "$mapfile" or die "Can't open $mapfile\n";
 			while(<MAPFILE>){
 			my $line = $_;
@@ -4968,45 +5075,63 @@ sub process_dlldata
 					last;
 				}
 			}
+			$abiDir = $platName unless defined $abiDir;
+			$abiDir = "armv5" unless defined $abiDir;
 
-			if(!defined $abiDir){
+			my $ci_dso = undef;
+			if( $aDllFile =~ /(.*)\.[^.]+$/ ){
+				my $proxydsofile = "$1.dso";
+				$proxydsofile =~ s-$abiDir\/(.*)\/-armv5\/lib\/-ig if defined $abiDir;
+				$ci_dso = find_path_ci($proxydsofile);
+			}
+			if (!$ci_dso && defined $dll) {
+				my $dso_base = $dll;
+				$dso_base =~ s/\.[^.]+$//;
+				$ci_dso = find_path_ci("$epocroot/epoc32/release/armv5/lib/$dso_base.dso");
+			}
+			if (!$ci_dso) {
+				my $stripped = $aDllFile;
+				$stripped =~ s/^.*[\/\\]//;
+				$stripped =~ s/^_\w+_//;
+				$stripped =~ s/\.[^.]+$//;
+				$ci_dso = find_path_ci("$epocroot/epoc32/release/armv5/lib/$stripped.dso");
+			}
+
+			if(!defined $ci_dso || ! -e $ci_dso){
 				print("Can't locate the map or proxy dso file for $aDllFile\n");
 				$errors++ if($strict);
 				next; #go to the next patch dll data statement
 			}
-			if( $aDllFile =~ /(.*)\.[^.]+$/ ){
-				my $proxydsofile = "$1.dso";
-				$proxydsofile =~ s-$abiDir\/(.*)\/-armv5\/lib\/-ig;
-				open PIPE, "getexports -d $proxydsofile|" or die "Can't open file $proxydsofile\n";
-				while (<PIPE>){
-					my $line = $_;
-					if($line =~ /\s*(\S+)\s+(\d+)\s+((\S+)\s+(\d+))?/){
-						my $symbol = $1;
-						my $ordinal = $2;
-						my $data = $3;
-						my $symbolSz = $5;
 
-						if(!$data){
-							next;
-						}
-						if(!exists $DllMapRef->{$symbol}){
-							next;
-						}
+			open PIPE, "getexports -d $ci_dso|" or die "Can't open file $ci_dso\n";
+			while (<PIPE>){
+				my $line = $_;
+				if($line =~ /\s*(\S+)\s+(\d+)\s+((\S+)\s+(\d+))?/){
+					my $symbol = $1;
+					my $ordinal = $2;
+					my $data = $3;
+					my $symbolSz = $5;
 
-						$DllSymMapRef = $DllMapRef->{$symbol};
+					if(!$data){
+						next;
+					}
+					if(!exists $DllMapRef->{$symbol}){
+						next;
+					}
 
-						# Record the ordinal and the size of the symbol.
-						$DllSymMapRef->{ordinal} = $ordinal;
-						$DllSymMapRef->{size} = $symbolSz;
-						$matchedSymbols++;
-						if( $matchedSymbols >= $SymbolCount){
+					$DllSymMapRef = $DllMapRef->{$symbol};
+
+					# Record the ordinal and the size of the symbol.
+					$DllSymMapRef->{ordinal} = $ordinal;
+					$DllSymMapRef->{size} = $symbolSz;
+					$matchedSymbols++;
+					if( $matchedSymbols >= $SymbolCount){
 						last;
-						}
 					}
 				}
-
-				close PIPE;
 			}
+
+			close PIPE;
 		}
 	}
 	exit(1) if ($errors && $strict ) ;

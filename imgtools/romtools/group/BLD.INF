@@ -42,8 +42,8 @@ PRJ_EXPORTS
 ../rombuild/addextension.pl		/epoc32/rom/tools/addextension.pl
 
 PRJ_MMPFILES 
-readimage 
-../rofsbuild/rofsbuild.mmp
+// readimage 
+// ../rofsbuild/rofsbuild.mmp
 ../rombuild/rombuild.mmp 
 
 PRJ_TESTMMPFILES

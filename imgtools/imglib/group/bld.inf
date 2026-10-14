@@ -46,6 +46,16 @@ PRJ_EXPORTS
 ../boostlibrary/binary/linux/libboost_regex-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_5/deb/libboost_regex-1.39.a
 ../boostlibrary/binary/linux/libboost_system-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_5/deb/libboost_system-1.39.a
 
+../boostlibrary/binary/linux/libboost_filesystem-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/rel/libboost_filesystem-1.39.a
+../boostlibrary/binary/linux/libboost_thread-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/rel/libboost_thread-1.39.a
+../boostlibrary/binary/linux/libboost_regex-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/rel/libboost_regex-1.39.a
+../boostlibrary/binary/linux/libboost_system-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/rel/libboost_system-1.39.a
+
+../boostlibrary/binary/linux/libboost_filesystem-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/deb/libboost_filesystem-1.39.a
+../boostlibrary/binary/linux/libboost_thread-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/deb/libboost_thread-1.39.a
+../boostlibrary/binary/linux/libboost_regex-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/deb/libboost_regex-1.39.a
+../boostlibrary/binary/linux/libboost_system-1.39.a /epoc32/release/tools2/linux-x86_64-libc2_27/deb/libboost_system-1.39.a
+
 #else
 ../boostlibrary/binary/windows/libboost_thread-1.39.a	/epoc32/release/tools2/rel/libboost_thread-1.39.a
 ../boostlibrary/binary/windows/libboost_regex-1.39.a	/epoc32/release/tools2/rel/libboost_regex-1.39.a

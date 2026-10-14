@@ -33,11 +33,7 @@ PRJ_EXPORTS
 
 
 PRJ_MMPFILES
-#ifndef TOOLS2_LINUX
 getexports
-#endif
-elftran
-genstubs
 elfdump
 
 

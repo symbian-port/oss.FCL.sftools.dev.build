@@ -45,6 +45,9 @@ ALWAYS_BUILD_AS_ARM:=1
 EXCEPTIONS:=$(NO_EXCEPTIONS)
 # No dedicated library for operator new/delete functions.
 HAS_DEDICATED_OP_NEWDEL_LIB:=
+# Link libgcc for division/runtime builtins and exports
+LINKER_DEFAULT_LIBS:=-Wl,--allow-multiple-definition -Wl,--whole-archive -lgcc -Wl,--no-whole-archive
+EXPORTUNFROZEN:=1
 
 endif
 endif

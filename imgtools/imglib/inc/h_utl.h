@@ -52,6 +52,7 @@ using namespace std;
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <string.h>
 
 
 #define _close close

@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <strings.h>
+#define stricmp strcasecmp
 
 
 #include <elfdefs.h>

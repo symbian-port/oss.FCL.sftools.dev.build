@@ -13,6 +13,18 @@
 //  configuration policy:
 //
 
+#if defined(__LINUX__) || defined(__linux__) || defined(__linux)
+#  ifndef BOOST_HAS_PTHREADS
+#    define BOOST_HAS_PTHREADS
+#  endif
+#  ifndef BOOST_HAS_THREADS
+#    define BOOST_HAS_THREADS
+#  endif
+#  ifndef BOOST_THREAD_POSIX
+#    define BOOST_THREAD_POSIX
+#  endif
+#endif
+
 // define this to locate a compiler config file:
 // #define BOOST_COMPILER_CONFIG <myheader>
 

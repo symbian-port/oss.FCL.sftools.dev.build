@@ -123,7 +123,8 @@
 // passed on the command line, which in turn defines
 // __GXX_EXPERIMENTAL_CXX0X__.
 #  define BOOST_HAS_DECLTYPE
-#  define BOOST_HAS_RVALUE_REFS
+// #  define BOOST_HAS_RVALUE_REFS
+#  define BOOST_NO_RVALUE_REFERENCES
 #  define BOOST_HAS_STATIC_ASSERT
 #  define BOOST_HAS_VARIADIC_TMPL
 #else

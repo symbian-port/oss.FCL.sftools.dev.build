@@ -21,6 +21,7 @@
 
 
 #include "parameterfileprocessor.h"
+#include <string.h>
 
 
 /**

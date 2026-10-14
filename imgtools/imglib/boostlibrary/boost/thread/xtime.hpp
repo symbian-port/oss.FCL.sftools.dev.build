@@ -18,6 +18,10 @@
 
 namespace boost {
 
+#if defined(TIME_UTC)
+#undef TIME_UTC
+#endif
+
 enum xtime_clock_types
 {
     TIME_UTC=1
